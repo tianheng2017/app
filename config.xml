@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget id="A6026410930392" security="false" version="1.0.10">
+    <name>安全云管家</name>
+    <content src="index.html"/>
+    <preference name="statusBarAppearance" value="false"/>
+    <preference name="frameBackgroundColor" value="rgba(0,0,0,0)"/>
+	<preference name="autoLaunch" value="false"/>
+    
+    <permission name="location" value="true"/>
+<preference name="debug" value="false"/></widget>

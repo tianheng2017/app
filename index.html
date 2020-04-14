@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>Hello APICloud</title>
+    <link rel="stylesheet" type="text/css" href="./css/api.css" />
+    <link rel="stylesheet" type="text/css" href="./css/common.css" />
+	<style>
+		.center{
+			display:-webkit-box;
+			-webkit-box-orient:vertical;
+			-webkit-box-pack:center;
+			-webkit-box-align:center;
+		}
+	</style>
+</head>
+<body style='background:#EDEDED;'>
+    <div id="wrap">
+        <div id="main" class='center'>
+                <img id='loading' src='image/loading.gif' width=65 height=65>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="./script/api.js"></script>
+<script type="text/javascript">
+
+    var launchRemoved = false;
+    var loadingRemoved = false;
+
+	apiready = function(){
+        api.setStatusBarStyle({
+            style: 'light'
+        });
+		checkStoragePermission();
+        api.openFrame({
+            name: 'main',
+            url: 'https://aqygj.com/',
+            bounces: false,
+            rect: {
+                w: 'auto',
+                h: 'auto'
+            },
+            progress:{
+                type:'page'
+            }
+        });
+		api.setFrameClient({
+		    frameName:'main'
+		},function(ret){
+		    onBrowserStateChange(ret);
+		});
+		removeLogic();
+        api.addEventListener({
+            name: 'keyback'
+        }, function(ret, err){
+            api.historyBack({
+                frameName:'main'
+            },function(ret,err){
+                if(!ret.status){
+                    api.closeWidget();
+                }
+            });
+        });
+		removeLogic();
+    };
+
+	function onBrowserStateChange(ret){
+    	if(0 == ret.state){//开始加载
+			if(!launchRemoved){
+				launchRemoved = true;
+				removeLaunch();
+			}
+    	}
+    	if(2 == ret.state){
+    		if(!loadingRemoved){
+    			loadingRemoved = true;
+    			document.getElementById('loading').style.display = 'none';
+    		}
+    	}
+    }
+
+	function removeLogic(){
+		setTimeout(function(){
+			if(!launchRemoved){
+				launchRemoved = true;
+				removeLaunch();
+			}
+		}, 3000);
+	}
+
+	function removeLaunch(){
+		api.removeLaunchView({
+			animation:{
+				type:"fade",
+				subType:"from_right",
+				duration:300
+			}
+		});
+	}
+
+	function checkStoragePermission(){
+		var perms = ['storage'];
+		var rets = api.hasPermission({
+			list:perms
+		});
+		var toReq = [];
+		for(var i in rets){
+			if(!rets[i].granted){
+				toReq.push(rets[i].name);
+			}
+		}
+		if(toReq.length > 0){
+			_confirm(perms);
+		}else{
+			//checkPhonePermission();
+		}
+	}
+
+	function checkPhonePermission(){
+		var perms = ['phone'];
+		var rets = api.hasPermission({
+			list:perms
+		});
+		var toReq = [];
+		for(var i in rets){
+			if(!rets[i].granted){
+				toReq.push(rets[i].name);
+			}
+		}
+		if(toReq.length > 0){
+			_confirm(perms);
+		}
+	}
+
+	function hasPermission(one_per){
+		var perms = new Array();
+		if(one_per){
+			perms.push(one_per);
+		}else{
+			var prs = document.getElementsByName("p_list");
+			for(var i = 0; i < prs.length; i++){
+				if(prs[i].checked){
+					perms.push(prs[i].value);
+				}
+			}
+		}
+		var rets = api.hasPermission({
+			list:perms
+		});
+		if(!one_per){
+			//apialert('判断结果：' + JSON.stringify(rets));
+			return;
+		}
+		return rets;
+	}
+
+	function reqPermission(one_per, callback){
+		var perms = new Array();
+		if(one_per){
+			perms.push(one_per);
+		}else{
+			var prs = document.getElementsByName("p_list_r");
+			for(var i = 0; i < prs.length; i++){
+				if(prs[i].checked){
+					perms.push(prs[i].value);
+				}
+			}
+		 }
+		api.requestPermission({
+			list: perms,
+			code: 100001
+		}, function(ret, err){
+			if(callback){
+				callback(ret);
+				return;
+			}
+		});
+	}
+
+	function confirmPer(perm){
+		var has = hasPermission(perm);
+		if(!has || !has[0] || !has[0].granted){
+			api.confirm({
+				title: '提醒',
+				msg: '没有获得 ' + perm + " 权限\n是否前往设置？",
+				buttons: ['去设置', '取消']
+			}, function(ret, err) {
+				if(1 == ret.buttonIndex){
+					reqPermission(perm);
+				}
+			});
+			return false;
+		}
+		return true;
+	}
+
+</script>
+</html>
